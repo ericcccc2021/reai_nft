@@ -1,7 +1,7 @@
-from contextlib import asynccontextmanager, contextmanager
+from contextlib import asynccontextmanager
 from enum import Enum
 from pprint import pprint
-from typing import Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 import aiohttp
 
@@ -36,9 +36,7 @@ from chia.wallet.puzzles import (
 from chia.wallet.puzzles.p2_delegated_puzzle_or_hidden_puzzle import (
     calculate_synthetic_secret_key,
 )
-from chia.wallet.transaction_record import TransactionRecord
 from clvm.casts import int_from_bytes, int_to_bytes
-from clvm_tools.binutils import disassemble
 
 COIN_AMOUNT = 1
 
@@ -75,9 +73,9 @@ async def get_wallet_client(config_path=DEFAULT_ROOT_PATH) -> Optional[WalletRpc
             config_path = DEFAULT_ROOT_PATH
         config = load_config(config_path, "config.yaml")
         self_hostname = config["self_hostname"]
-        full_node_rpc_port = config["wallet"]["rpc_port"]
+        wallet_rpc_port = config["wallet"]["rpc_port"]
         full_node_client: WalletRpcClient = await WalletRpcClient.create(
-            self_hostname, uint16(full_node_rpc_port), DEFAULT_ROOT_PATH, config
+            self_hostname, uint16(wallet_rpc_port), DEFAULT_ROOT_PATH, config
         )
         return full_node_client
     except Exception as e:
@@ -333,16 +331,13 @@ class ReaiWallet:
         starting_puzzle: Program = p2_delegated_puzzle_or_hidden_puzzle.puzzle_for_pk(
             self.pk
         )  # noqa
-        conditions = []
-        conditions.append(
-            Program.to(
-                [
-                    ConditionOpcode.CREATE_COIN,
-                    starting_coin.puzzle_hash,
-                    starting_coin.amount - fee,
-                ]
-            )
-        )
+        conditions = [Program.to(
+            [
+                ConditionOpcode.CREATE_COIN,
+                starting_coin.puzzle_hash,
+                starting_coin.amount - fee,
+            ]
+        )]
         full_solution: Program = (
             p2_delegated_puzzle_or_hidden_puzzle.solution_for_conditions(conditions)
         )  # noqa
@@ -488,7 +483,7 @@ class ReaiWallet:
             starting_coins = []
             for i in range(0, k):
                 starting_coins.append(all_available_coins[i])
-            
+
             starting_puzzle: Program = p2_delegated_puzzle_or_hidden_puzzle.puzzle_for_pk(
                 self.pk
             )  # noqa

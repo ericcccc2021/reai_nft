@@ -1,5 +1,4 @@
 from pathlib import Path
-from pprint import pprint
 
 import cdv.clibs as std_lib
 from cdv.util.load_clvm import load_clvm
