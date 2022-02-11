@@ -163,11 +163,20 @@ async def mint(ctx, fee):
         tx_id, launcher_id = await wallet.mint(fee=fee)
         debug("Got back tx_id: %s, launcher_id: %s" % (tx_id, launcher_id))
         if tx_id and launcher_id:
-            click.echo(
-                f"Minted a new reai nft with id: 0x{launcher_id}\n\n"
-                f"Track transaction: 0x{tx_id}"
-                f"\tFee: {fee} mojos"
-            )
+            pretty_data = {
+                "launcher_id": f"0x{launcher_id}",
+                "transaction_id": f"0x{tx_id}",
+                "fee": f"Fee: {fee} mojos",
+            }
+
+            class BytesDump(json.JSONEncoder):
+                def default(self, obj):
+                    if isinstance(obj, bytes):
+                        return obj.decode()
+                    return json.JSONEncoder.default(self, obj)
+
+            click.echo(json.dumps(pretty_data, cls=BytesDump))
+
         else:
             click.echo("Failed to mint for unknown reason.")
 
