@@ -226,7 +226,7 @@ async def mint_in_batch_no_stop(ctx, fee, batchsize, filepath):
                 try:
                     current_launcher_id = cur_item[0]
                     current_tx_id = cur_item[1]
-                    url = "curl --insecure --cert ~/.chia/mainnet/config/ssl/full_node/private_full_node.crt --key ~/.chia/mainnet/config/ssl/full_node/private_full_node.key -d \"{\"name\": \"0x%s\"}\" -H \"Content-Type: application/json\" -X POST https://localhost:8555/get_coin_record_by_name" % current_launcher_id
+                    url = "curl --insecure --cert ~/.chia/mainnet/config/ssl/full_node/private_full_node.crt --key ~/.chia/mainnet/config/ssl/full_node/private_full_node.key -d \'{\"name\": \"0x%s\"}\' -H \"Content-Type: application/json\" -X POST https://localhost:8555/get_coin_record_by_name" % current_launcher_id
                     subprocess.Popen(url)
                     data = subprocess.check_output(['bash', '-c', url])
                     if not data['success']:
@@ -241,7 +241,7 @@ async def mint_in_batch_no_stop(ctx, fee, batchsize, filepath):
                             data_fetched = True
                             time.sleep(0.05)
                         except Exception as er:
-                            click.echo("error trying to fetch coin information: ", err=True)
+                            click.echo("error trying to fetch coin after getting success result: ", err=True)
                             click.echo(e)
                             print_restart_message_and_sleep()
                 except Exception as e:
