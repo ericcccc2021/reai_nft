@@ -57,9 +57,7 @@ def parse_launcher(ctx, param, value):
 @click.option("-v", "--verbose", help="Show more debugging info.", is_flag=True)
 @click.pass_context
 def cli(ctx, config_path, fingerprint, verbose):
-    """Manage reai nft on Chia network.
-
-    They can be used to store key information in a decentralized and durable way."""
+    """Manage reai nft on Chia network."""
     if verbose:
         global VERBOSE
         VERBOSE = True
@@ -70,8 +68,7 @@ def cli(ctx, config_path, fingerprint, verbose):
 
 @click.command(
     name="mk",
-    help="try to mint k tokens if possible. Otherwise it tries to split existing tokens so next time we can mint k "
-         "tokens",
+    help="make k tokens at one time",
 )
 @click.option(
     "--fee",
@@ -109,7 +106,7 @@ async def mint_k(ctx, fee, k):
 
 
 @click.command(
-    name="get-number-of-available-coins",
+    name="get-coin-count",
     help="get number of available coins to spend",
 )
 @coro
@@ -150,7 +147,7 @@ async def split_largest_coin_into_k(ctx, k, fee):
         )
 
 
-@click.command(help="Mint a new reai nft, returns a LAUNCHER_ID.")
+@click.command(help="Mint a new reai nft, returns a LAUNCHER_ID and transaction id.")
 @click.option(
     "--fee",
     type=int,
@@ -178,7 +175,7 @@ async def mint(ctx, fee):
 
 @click.command(
     name="add-pair",
-    help="Add a pair of strings to coin data.\n\nPair will be prepended to the list, not appended. Only works on mutable coins.",
+    help="Add a pair ofdata, prepended to the list. Only works on mutable coins.",
 )
 @click.option(
     "--fee",
@@ -203,7 +200,7 @@ async def add_pair(ctx, launcher_id, key, value, fee):
 
 @click.command(
     name="remove-pair",
-    help="Remove a pair at a specifed index from coin data.\n\nOnly works on mutable coins.",
+    help="Remove a pair at a specified index from coin data.\n\nOnly works on mutable coins.",
 )
 @click.option(
     "--fee",
