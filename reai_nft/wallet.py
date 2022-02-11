@@ -92,13 +92,13 @@ async def get_wallet_client(config_path=DEFAULT_ROOT_PATH) -> Optional[WalletRpc
 
 class ReaiWallet:
     def __init__(
-        self,
-        wallet_id: str,
-        wallet_client: WalletRpcClient,
-        node: FullNodeRpcClient,
-        wallet_address,
-        private_key: PrivateKey,
-        verbose=False,
+            self,
+            wallet_id: str,
+            wallet_client: WalletRpcClient,
+            node: FullNodeRpcClient,
+            wallet_address,
+            private_key: PrivateKey,
+            verbose=False,
     ):
         self.wallet_client = wallet_client
         self.wallet_id = wallet_id
@@ -112,7 +112,7 @@ class ReaiWallet:
     @staticmethod
     @asynccontextmanager
     async def create(
-        fingerprint: int = None, config_file_path: str = None, verbose=False
+            fingerprint: int = None, config_file_path: str = None, verbose=False
     ):
         bw = None
         try:
@@ -165,7 +165,7 @@ class ReaiWallet:
         await self.node_client.await_closed()
 
     async def _mutate_data(
-        self, coin_name: bytes32, operation: Operation, value, fee=0
+            self, coin_name: bytes32, operation: Operation, value, fee=0
     ) -> bytes32:
 
         parent_record, singleton_record = await self._get_latest_singleton(coin_name)
@@ -196,9 +196,9 @@ class ReaiWallet:
         signature: G2Element = AugSchemeMPL.sign(
             self.sk,
             (
-                sha256_treehash(Program.to([operation.value, value]))
-                + singleton.name()
-                + DEFAULT_CONSTANTS.AGG_SIG_ME_ADDITIONAL_DATA
+                    sha256_treehash(Program.to([operation.value, value]))
+                    + singleton.name()
+                    + DEFAULT_CONSTANTS.AGG_SIG_ME_ADDITIONAL_DATA
             ),
         )
         singleton_spend = SpendBundle(
@@ -221,7 +221,7 @@ class ReaiWallet:
         raise Exception("Error pushing transaction: %s" % singleton_spend.name())
 
     async def add_pair(
-        self, coin_name: bytes32, pair: Tuple[bytes, bytes], fee=0
+            self, coin_name: bytes32, pair: Tuple[bytes, bytes], fee=0
     ) -> bool:
         if not isinstance(pair, (tuple, list)):
             raise ValueError("cons must be tuple or list")
@@ -259,9 +259,9 @@ class ReaiWallet:
         signature: G2Element = AugSchemeMPL.sign(
             self.sk,
             (
-                sha256_treehash(Program.to(new_version))
-                + singleton.name()
-                + DEFAULT_CONSTANTS.AGG_SIG_ME_ADDITIONAL_DATA
+                    sha256_treehash(Program.to(new_version))
+                    + singleton.name()
+                    + DEFAULT_CONSTANTS.AGG_SIG_ME_ADDITIONAL_DATA
             ),
         )
         singleton_spend = SpendBundle(
@@ -300,15 +300,15 @@ class ReaiWallet:
         # extract curried data from previous version
         data = (
             args.rest()
-            .first()
-            .rest()
-            .rest()
-            .first()
-            .rest()
-            .rest()
-            .first()
-            .rest()
-            .first()
+                .first()
+                .rest()
+                .rest()
+                .first()
+                .rest()
+                .rest()
+                .first()
+                .rest()
+                .first()
         ).as_python()
         if len(data) == 1:
             data = int_from_bytes(data[0])
@@ -360,9 +360,9 @@ class ReaiWallet:
         signature: G2Element = AugSchemeMPL.sign(
             ssk,
             (
-                delegated_puzzle.get_tree_hash()
-                + starting_coin.name()
-                + DEFAULT_CONSTANTS.AGG_SIG_ME_ADDITIONAL_DATA
+                    delegated_puzzle.get_tree_hash()
+                    + starting_coin.name()
+                    + DEFAULT_CONSTANTS.AGG_SIG_ME_ADDITIONAL_DATA
             ),
         )
 
@@ -481,10 +481,14 @@ class ReaiWallet:
 
     async def mint_k(self, fee=0, k=50) -> Tuple[bool, List[Tuple[bytes32, bytes32]]]:
         puzzle = driver.create_reai_puzzle([], self.pk)
-        starting_coins = await self._find_usable_coins()
-        if len(starting_coins) < k:
+        all_available_coins = await self._find_usable_coins()
+        if len(all_available_coins) < k:
             return False, []
         else:
+            starting_coins = []
+            for i in range(0, k):
+                starting_coins.append(all_available_coins[i])
+            
             starting_puzzle: Program = p2_delegated_puzzle_or_hidden_puzzle.puzzle_for_pk(
                 self.pk
             )  # noqa
@@ -537,9 +541,9 @@ class ReaiWallet:
                 signature: G2Element = AugSchemeMPL.sign(
                     ssk,
                     (
-                        delegated_puzzle.get_tree_hash()
-                        + starting_coin.name()
-                        + DEFAULT_CONSTANTS.AGG_SIG_ME_ADDITIONAL_DATA
+                            delegated_puzzle.get_tree_hash()
+                            + starting_coin.name()
+                            + DEFAULT_CONSTANTS.AGG_SIG_ME_ADDITIONAL_DATA
                     ),
                 )
 
@@ -597,9 +601,9 @@ class ReaiWallet:
         signature: G2Element = AugSchemeMPL.sign(
             ssk,
             (
-                delegated_puzzle.get_tree_hash()
-                + starting_coin.name()
-                + DEFAULT_CONSTANTS.AGG_SIG_ME_ADDITIONAL_DATA
+                    delegated_puzzle.get_tree_hash()
+                    + starting_coin.name()
+                    + DEFAULT_CONSTANTS.AGG_SIG_ME_ADDITIONAL_DATA
             ),
         )
 
@@ -643,9 +647,9 @@ class ReaiWallet:
         signature: G2Element = AugSchemeMPL.sign(
             self.sk,
             (
-                sha256_treehash(Program.to(new_pub_key))
-                + singleton.name()
-                + DEFAULT_CONSTANTS.AGG_SIG_ME_ADDITIONAL_DATA
+                    sha256_treehash(Program.to(new_pub_key))
+                    + singleton.name()
+                    + DEFAULT_CONSTANTS.AGG_SIG_ME_ADDITIONAL_DATA
             ),
         )
         singleton_spend = SpendBundle(
@@ -665,7 +669,7 @@ class ReaiWallet:
         raise Exception("Error pushing transaction: %s" % singleton_spend.name())
 
     async def _get_latest_singleton(
-        self, coin_id: bytes32
+            self, coin_id: bytes32
     ) -> Tuple[CoinRecord, CoinRecord]:
         if self.verbose:
             print(f"Finding latest singleton for launcher: {coin_id.hex()}")
