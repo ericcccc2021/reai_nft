@@ -396,18 +396,18 @@ class ReaiWallet:
             raise ValueError("No usable coins found in the wallet. Pick another.")
         return coins_with_balance
 
-    async def split_largest_coin_into_k(self, k=10, fee=0) -> int:
+    async def split_largest_coin_into_k(self, k=10, fee=0) -> bool:
         puzzle = driver.create_reai_puzzle([], self.pk)
         starting_coins = await self._find_usable_coins()
         if not starting_coins or len(starting_coins) == 0:
-            return -1
+            return False
         largest_coin = starting_coins[0]
         for c in starting_coins:
             if c.amount > largest_coin.amount:
                 largest_coin = c
 
         if largest_coin.amount <= k + fee:
-            return -1
+            return False
 
         (
             conditions,
@@ -466,7 +466,7 @@ class ReaiWallet:
         if not resp["success"]:
             raise ValueError("Couldn't push the transaction: %s" % resp)
 
-        return 0
+        return True
 
     async def get_number_of_coins_available(self) -> int:
         starting_coins = await self._find_usable_coins()

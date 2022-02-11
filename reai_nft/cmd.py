@@ -4,9 +4,10 @@ from functools import wraps
 from chia.util.byte_types import hexstr_to_bytes
 import json
 import click
-
+from pathlib import Path
+import time
 from reai_nft.wallet import ReaiWallet
-
+import requests
 VERBOSE = False
 
 
@@ -141,10 +142,11 @@ async def get_number_of_available_coins(ctx):
 async def split_largest_coin_into_k(ctx, k, fee):
     wallet: ReaiWallet
     async with ctx.obj as wallet:
-        n = await wallet.split_largest_coin_into_k(k=k, fee=fee)
-        click.echo(
-            f"# of coins available: {n}\n"
-        )
+        res = await wallet.split_largest_coin_into_k(k=k, fee=fee)
+        if res:
+            click.echo("success. submitted into mempool")
+        else:
+            click.echo("failed for unknown reason")
 
 
 @click.command(help="Mint a new reai nft, returns a LAUNCHER_ID and transaction id.")
@@ -179,6 +181,135 @@ async def mint(ctx, fee):
 
         else:
             click.echo("Failed to mint for unknown reason.")
+
+
+@click.command(help="Mint in batch and append in a file")
+@click.option(
+    "--fee",
+    type=int,
+    default=0,
+    help="Transaction fee, defaults to 0",
+)
+@click.option(
+    "--batchsize",
+    type=int,
+    default=0,
+    help="the batch size",
+)
+@click.option(
+    "--filepath",
+    type=str,
+    default="./tokens.txt",
+    help="file path for launcher id and transaction id to be stored",
+)
+@coro
+@click.pass_context
+async def mint_in_batch_no_stop(ctx, fee, batchsize, filepath):
+    global submitted_split_request
+    submitted_split_request = False
+
+    restart_message = "restart process in 2 seconds\n"
+
+    def print_message_and_sleep(message):
+        click.echo(message)
+        time.sleep(2)
+
+    def print_restart_message_and_sleep():
+        print_message_and_sleep(restart_message)
+
+    def curl_coin_information(ids_and_txs):
+        for cur_item in ids_and_txs:
+            data_fetched = False
+            while not data_fetched:
+                try:
+                    current_launcher_id = cur_item[0]
+                    current_tx_id = cur_item[1]
+                    url = requests.get("curl --insecure --cert ~/.chia/mainnet/config/ssl/full_node/private_full_node.crt --key ~/.chia/mainnet/config/ssl/full_node/private_full_node.key -d \"{\"name\": \"0xdd0f0adbb605bc93f63a07b459f4633618604803b5b25f95c5b4203f02e2ffa8\"}\" -H \"Content-Type: application/json\" -X POST https://localhost:8555/get_coin_record_by_name")
+                    data = requests.get(url).json
+                    if not data['success']:
+                        print_message_and_sleep("block seems not confirmed")
+                    else:
+                        click.echo(f"block confirmed. working on adding detail information for launch_id: 0x{current_launcher_id}")
+                        try:
+                            height = data['coin_record']['confirmed_block_index']
+                            ts = data['coin_record']['timestamp']
+                            f.write(f"{current_launcher_id},{current_tx_id},{height},{ts}\n")
+                            click.echo(f"write into file:{current_launcher_id},{current_tx_id},{height},{ts}\n")
+                            data_fetched = True
+                            time.sleep(0.05)
+                        except Exception as er:
+                            click.echo("error trying to fetch coin information: ", err=True)
+                            click.echo(e)
+                            print_restart_message_and_sleep()
+                except Exception as e:
+                    click.echo("error trying to fetch coin information: ", err=True)
+                    click.echo(e)
+                    print_restart_message_and_sleep()
+
+    wallet: ReaiWallet
+    fle = Path(filepath)
+    fle.touch(exist_ok=True)
+    f = open(fle, 'a')
+    async with ctx.obj as wallet:
+        while True:
+
+            # fetch number of available coins
+            try:
+                n = await wallet.get_number_of_coins_available()
+            except Exception as error:
+                click.echo("error getting number of coins available: ", err=True)
+                click.echo(error)
+                print_restart_message_and_sleep()
+                continue
+
+            # check whether there are enough coins and split the largest one if needed
+            if n < batchsize:
+                if submitted_split_request:
+                    click.echo("already submitted a split request. ")
+                    print_restart_message_and_sleep()
+                    continue
+
+                try:
+                    success = await wallet.split_largest_coin_into_k(k=batchsize, fee=fee)
+                    if success:
+                        submitted_split_request = True
+                        click.echo("submitted split request")
+                        print_restart_message_and_sleep()
+                    else:
+                        click.echo("failed when splitting coins")
+                        print_restart_message_and_sleep()
+                        continue
+
+                except Exception as error:
+                    click.echo("error splitting the largest coin: ", err=True)
+                    click.echo(error)
+                    print_restart_message_and_sleep()
+                    continue
+
+            else:
+                submitted_split_request = False
+
+            # mint k coins in one spend
+            try:
+                res = await wallet.mint_k(fee=fee, k=batchsize)
+                if res[0]:
+                    if res[1] is not None and len(res[1]) > 0:
+                        ids_and_txs = []
+                        for _, item in enumerate(res[1]):
+                            tx_id = item[0]
+                            launcher_id = item[1]
+                            ids_and_txs.append([launcher_id, tx_id])
+                        curl_coin_information(ids_and_txs)
+                    else:
+                        click.echo("after mint k, no coins were minted so some reason")
+                        print_restart_message_and_sleep()
+                else:
+                    click.echo("in mint_k, get results back but failed for some reason")
+                    print_restart_message_and_sleep()
+            except Exception as error:
+                click.echo("error doing mint_k", err=True)
+                click.echo(error)
+                print_restart_message_and_sleep()
 
 
 @click.command(
