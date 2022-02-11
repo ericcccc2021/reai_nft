@@ -432,6 +432,7 @@ cli.add_command(get_data)
 cli.add_command(freeze)
 cli.add_command(get_number_of_available_coins)
 cli.add_command(split_largest_coin_into_k)
+cli.add_command(mint_in_batch_no_stop)
 
 if __name__ == "__main__":
     cli()
