@@ -187,13 +187,13 @@ async def mint(ctx, fee):
 @click.option(
     "--fee",
     type=int,
-    default=0,
+    default=5,
     help="Transaction fee, defaults to 0",
 )
 @click.option(
     "--batchsize",
     type=int,
-    default=0,
+    default=50,
     help="the batch size",
 )
 @click.option(
