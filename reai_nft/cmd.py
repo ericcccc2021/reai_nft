@@ -8,6 +8,8 @@ from pathlib import Path
 import time
 from reai_nft.wallet import ReaiWallet
 import requests
+import subprocess
+
 VERBOSE = False
 
 
@@ -224,8 +226,9 @@ async def mint_in_batch_no_stop(ctx, fee, batchsize, filepath):
                 try:
                     current_launcher_id = cur_item[0]
                     current_tx_id = cur_item[1]
-                    url = requests.get("curl --insecure --cert ~/.chia/mainnet/config/ssl/full_node/private_full_node.crt --key ~/.chia/mainnet/config/ssl/full_node/private_full_node.key -d \"{\"name\": \"0xdd0f0adbb605bc93f63a07b459f4633618604803b5b25f95c5b4203f02e2ffa8\"}\" -H \"Content-Type: application/json\" -X POST https://localhost:8555/get_coin_record_by_name")
-                    data = requests.get(url).json
+                    url = "curl --insecure --cert ~/.chia/mainnet/config/ssl/full_node/private_full_node.crt --key ~/.chia/mainnet/config/ssl/full_node/private_full_node.key -d \"{\"name\": \"0x%s\"}\" -H \"Content-Type: application/json\" -X POST https://localhost:8555/get_coin_record_by_name" % current_launcher_id
+                    subprocess.Popen(url)
+                    data = subprocess.check_output(['bash', '-c', url])
                     if not data['success']:
                         print_message_and_sleep("block seems not confirmed")
                     else:
