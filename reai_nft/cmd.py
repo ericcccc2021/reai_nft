@@ -166,7 +166,7 @@ async def mint(ctx, fee):
             pretty_data = {
                 "launcher_id": f"0x{launcher_id}",
                 "transaction_id": f"0x{tx_id}",
-                "fee": f"Fee: {fee} mojos",
+                "fee_in_mojos": f"{fee}",
             }
 
             class BytesDump(json.JSONEncoder):
