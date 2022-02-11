@@ -264,9 +264,7 @@ async def change_owner(ctx, launcher_id, new_pub_key, fee):
 @coro
 @click.pass_context
 async def get_data(ctx, launcher_id):
-    """Returns a JSON of coin data and metadata
-
-    Can be piped into other commands."""
+    """Returns a JSON of coin data and metadata"""
     wallet: ReaiWallet
     async with ctx.obj as wallet:
         debug(f"Fetching data for reai nft: {launcher_id.hex()}")
