@@ -164,10 +164,9 @@ async def mint(ctx, fee):
         debug("Got back tx_id: %s, launcher_id: %s" % (tx_id, launcher_id))
         if tx_id and launcher_id:
             click.echo(
-                f"Minted a new reai nft with id: {launcher_id}\n\n"
-                f"Track transaction: {tx_id}"
+                f"Minted a new reai nft with id: 0x{launcher_id}\n\n"
+                f"Track transaction: 0x{tx_id}"
                 f"\tFee: {fee} mojos"
-                "\n\nNOTE: Store launcher_id somewhere safe as this wallet doesn't keep it anywhere yet.\n"
             )
         else:
             click.echo("Failed to mint for unknown reason.")
@@ -285,12 +284,12 @@ async def get_data(ctx, launcher_id):
 
 
 cli.add_command(mint)
+cli.add_command(mint_k)
 cli.add_command(add_pair)
 cli.add_command(remove_pair_at)
 cli.add_command(change_owner)
 cli.add_command(get_data)
 cli.add_command(freeze)
-cli.add_command(mint_k)
 cli.add_command(get_number_of_available_coins)
 cli.add_command(split_largest_coin_into_k)
 
