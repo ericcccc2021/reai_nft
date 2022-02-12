@@ -265,7 +265,7 @@ async def mint_in_batch_no_stop(ctx, fee, batchsize, filepath):
     async with ctx.obj as wallet:
         global keep_minting
         keep_minting = Path('keep_minting_flag').read_text()
-        while keep_minting == "1":
+        while keep_minting.startswith("1"):
 
             wallet: ReaiWallet
             fle = Path(full_file_path)
