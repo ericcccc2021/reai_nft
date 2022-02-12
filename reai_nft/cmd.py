@@ -257,12 +257,15 @@ async def mint_in_batch_no_stop(ctx, fee, batchsize, filepath):
                     click.echo(e)
                     print_restart_message_and_sleep()
 
-    wallet: ReaiWallet
-    fle = Path(filepath)
-    fle.touch(exist_ok=True)
-    f = open(fle, 'a')
     async with ctx.obj as wallet:
-        while True:
+        global keep_minting
+        keep_minting = Path('keep_minting_flag').read_text()
+        while keep_minting == "1":
+
+            wallet: ReaiWallet
+            fle = Path(filepath)
+            fle.touch(exist_ok=True)
+            f = open(fle, 'a')
 
             # fetch number of available coins
             try:
@@ -304,7 +307,7 @@ async def mint_in_batch_no_stop(ctx, fee, batchsize, filepath):
 
             # mint k coins in one spend
             try:
-                click.echo("HappyPath: Now try to mint k coins")
+                click.echo(f"HappyPath: Now try to mint {batchsize} coins in one spend")
                 res = await wallet.mint_k(fee=fee, k=batchsize)
                 if res[0]:
                     if res[1] is not None and len(res[1]) > 0:
@@ -324,6 +327,9 @@ async def mint_in_batch_no_stop(ctx, fee, batchsize, filepath):
                 click.echo("error doing mint_k", err=True)
                 click.echo(error)
                 print_restart_message_and_sleep()
+
+            f.close()
+            keep_minting = Path('keep_minting_flag').read_text()
 
 
 @click.command(
