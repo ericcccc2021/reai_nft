@@ -190,7 +190,7 @@ async def mint(ctx, fee):
 @click.option(
     "--fee",
     type=int,
-    default=5,
+    default=10,
     help="Transaction fee, defaults to 0",
 )
 @click.option(
@@ -270,6 +270,8 @@ async def mint_in_batch_no_stop(ctx, fee, batchsize, filepath):
                 print_restart_message_and_sleep()
                 continue
 
+            click.echo(f"There are {n} coins available now")
+
             # check whether there are enough coins and split the largest one if needed
             if n < batchsize:
                 if submitted_split_request:
@@ -299,6 +301,7 @@ async def mint_in_batch_no_stop(ctx, fee, batchsize, filepath):
 
             # mint k coins in one spend
             try:
+                click.echo("Now try to mint k coins")
                 res = await wallet.mint_k(fee=fee, k=batchsize)
                 if res[0]:
                     if res[1] is not None and len(res[1]) > 0:
