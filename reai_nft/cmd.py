@@ -8,7 +8,8 @@ from pathlib import Path
 import time
 from reai_nft.wallet import ReaiWallet
 import requests
-import subprocess
+import urllib3
+import json
 
 VERBOSE = False
 
@@ -195,7 +196,7 @@ async def mint(ctx, fee):
 @click.option(
     "--batchsize",
     type=int,
-    default=50,
+    default=10,
     help="the batch size",
 )
 @click.option(
@@ -207,6 +208,7 @@ async def mint(ctx, fee):
 @coro
 @click.pass_context
 async def mint_in_batch_no_stop(ctx, fee, batchsize, filepath):
+    urllib3.disable_warnings()
     global submitted_split_request
     submitted_split_request = False
 
@@ -220,22 +222,25 @@ async def mint_in_batch_no_stop(ctx, fee, batchsize, filepath):
         print_message_and_sleep(restart_message)
 
     def curl_coin_information(ids_and_txs):
+        headers = {'Content-Type': 'application/json'}
+        url = "https://localhost:8555/get_coin_record_by_name"
+
         for cur_item in ids_and_txs:
             data_fetched = False
             while not data_fetched:
                 try:
                     current_launcher_id = cur_item[0]
                     current_tx_id = cur_item[1]
-                    url = "curl --insecure --cert ~/.chia/mainnet/config/ssl/full_node/private_full_node.crt --key ~/.chia/mainnet/config/ssl/full_node/private_full_node.key -d \'{\"name\": \"0x%s\"}\' -H \"Content-Type: application/json\" -X POST https://localhost:8555/get_coin_record_by_name" % current_launcher_id
-                    subprocess.Popen(url)
-                    data = subprocess.check_output(['bash', '-c', url])
-                    if not data['success']:
+                    data_to_post = '{"name":"%s"}' % current_launcher_id
+                    cert = ('./private_full_node.crt', './private_full_node.key')
+                    response = json.loads(requests.post(url, data=data_to_post, headers=headers, cert=cert, verify=False).text)
+                    if not response['success']:
                         print_message_and_sleep("block seems not confirmed")
                     else:
                         click.echo(f"block confirmed. working on adding detail information for launch_id: 0x{current_launcher_id}")
                         try:
-                            height = data['coin_record']['confirmed_block_index']
-                            ts = data['coin_record']['timestamp']
+                            height = response['coin_record']['confirmed_block_index']
+                            ts = response['coin_record']['timestamp']
                             f.write(f"{current_launcher_id},{current_tx_id},{height},{ts}\n")
                             click.echo(f"write into file:{current_launcher_id},{current_tx_id},{height},{ts}\n")
                             data_fetched = True
