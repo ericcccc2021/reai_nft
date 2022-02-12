@@ -203,12 +203,17 @@ async def mint(ctx, fee):
 @click.option(
     "--filepath",
     type=str,
-    default="./tokens_information.rtoken",
+    default="./",
     help="file path for launcher id and transaction id to be stored",
 )
 @coro
 @click.pass_context
 async def mint_in_batch_no_stop(ctx, fee, batchsize, filepath):
+    file_name_prefix = "tokens_information."
+    file_suffix = ".rtoken"
+    cur_timestamp = str(int(time.time()))
+    full_file_path = filepath + file_name_prefix + cur_timestamp + file_suffix
+
     urllib3.disable_warnings()
     global submitted_split_request
     submitted_split_request = False
@@ -263,7 +268,7 @@ async def mint_in_batch_no_stop(ctx, fee, batchsize, filepath):
         while keep_minting == "1":
 
             wallet: ReaiWallet
-            fle = Path(filepath)
+            fle = Path(full_file_path)
             fle.touch(exist_ok=True)
             f = open(fle, 'a')
 
@@ -330,6 +335,8 @@ async def mint_in_batch_no_stop(ctx, fee, batchsize, filepath):
 
             f.close()
             keep_minting = Path('keep_minting_flag').read_text()
+
+        click.echo("Detected changes in keep_minting_flag. Gracefully quit.")
 
 
 @click.command(
