@@ -291,7 +291,7 @@ async def mint_in_batch_no_stop(ctx, fee, batchsize, filepath):
                     continue
 
                 try:
-                    success = await wallet.split_largest_coin_into_k(k=batchsize, fee=fee)
+                    success = await wallet.split_largest_coin_into_k(k=20, fee=fee)
                     if success:
                         submitted_split_request = True
                         click.echo("submitted split request")
