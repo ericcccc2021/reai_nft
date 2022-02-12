@@ -201,7 +201,7 @@ async def mint(ctx, fee):
 @click.option(
     "--filepath",
     type=str,
-    default="./tokens.txt",
+    default="./tokens_information.rtoken",
     help="file path for launcher id and transaction id to be stored",
 )
 @coro
