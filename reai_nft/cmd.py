@@ -8,7 +8,7 @@ from pathlib import Path
 import time
 from reai_nft.wallet import ReaiWallet
 import requests
-import datetime
+from datetime import datetime
 import urllib3
 import json
 
@@ -216,8 +216,9 @@ async def mint_in_batch_no_stop(ctx, fee, batchsize, filepath):
     restart_message = "restart process in 2 seconds\n"
 
     def print_message_and_sleep(message):
-        t = datetime.datetime.now()
-        click.echo(message + ", " + t)
+        t = datetime.now()
+        t_str = t.strftime("%d-%b-%Y (%H:%M:%S.%f)")
+        click.echo(message + ", " + t_str)
         time.sleep(2)
 
     def print_restart_message_and_sleep():
