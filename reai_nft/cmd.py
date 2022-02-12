@@ -8,6 +8,7 @@ from pathlib import Path
 import time
 from reai_nft.wallet import ReaiWallet
 import requests
+import datetime
 import urllib3
 import json
 
@@ -215,7 +216,8 @@ async def mint_in_batch_no_stop(ctx, fee, batchsize, filepath):
     restart_message = "restart process in 2 seconds\n"
 
     def print_message_and_sleep(message):
-        click.echo(message)
+        t = datetime.datetime.now()
+        click.echo(message + ", " + t)
         time.sleep(2)
 
     def print_restart_message_and_sleep():
@@ -235,14 +237,14 @@ async def mint_in_batch_no_stop(ctx, fee, batchsize, filepath):
                     cert = ('./private_full_node.crt', './private_full_node.key')
                     response = json.loads(requests.post(url, data=data_to_post, headers=headers, cert=cert, verify=False).text)
                     if not response['success']:
-                        print_message_and_sleep("block seems not confirmed")
+                        print_message_and_sleep("HappyPath: block seems not confirmed")
                     else:
                         click.echo(f"block confirmed. working on adding detail information for launch_id: 0x{current_launcher_id}")
                         try:
                             height = response['coin_record']['confirmed_block_index']
                             ts = response['coin_record']['timestamp']
-                            f.write(f"{current_launcher_id},{current_tx_id},{height},{ts}\n")
-                            click.echo(f"write into file:{current_launcher_id},{current_tx_id},{height},{ts}\n")
+                            f.write(f"0x{current_launcher_id},0x{current_tx_id},{height},{ts}\n")
+                            click.echo(f"write into file:0x{current_launcher_id},0x{current_tx_id},{height},{ts}\n")
                             data_fetched = True
                             time.sleep(0.05)
                         except Exception as er:
@@ -270,12 +272,12 @@ async def mint_in_batch_no_stop(ctx, fee, batchsize, filepath):
                 print_restart_message_and_sleep()
                 continue
 
-            click.echo(f"There are {n} coins available now")
+            click.echo(f"HappyPath: There are {n} coins available now")
 
             # check whether there are enough coins and split the largest one if needed
             if n < batchsize:
                 if submitted_split_request:
-                    click.echo("already submitted a split request. ")
+                    click.echo("HappyPath: already submitted a split request. ")
                     print_restart_message_and_sleep()
                     continue
 
@@ -301,7 +303,7 @@ async def mint_in_batch_no_stop(ctx, fee, batchsize, filepath):
 
             # mint k coins in one spend
             try:
-                click.echo("Now try to mint k coins")
+                click.echo("HappyPath: Now try to mint k coins")
                 res = await wallet.mint_k(fee=fee, k=batchsize)
                 if res[0]:
                     if res[1] is not None and len(res[1]) > 0:
