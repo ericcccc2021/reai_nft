@@ -4,6 +4,6 @@
 
 
 ```
-This repo was originally forked from https://github.com/trepca/beacon-coin and heavily modified for internal use.
-Without Trepca's great foundational work, any enhancement wouldn't be possible.
+This repo was originally forked from https://github.com/trepca/beacon-coin and was heavily modified for internal use.
+Without Trepca's great foundational work, any changes I made wouldn't be possible.
 ```
