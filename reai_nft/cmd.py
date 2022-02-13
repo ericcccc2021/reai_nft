@@ -242,21 +242,27 @@ async def mint_in_batch_no_stop(ctx, fee, batchsize, filepath):
                     data_to_post = '{"name":"%s"}' % current_launcher_id
                     cert = ('./private_full_node.crt', './private_full_node.key')
                     response = json.loads(requests.post(url, data=data_to_post, headers=headers, cert=cert, verify=False).text)
-                    if not response['success']:
-                        print_message_and_sleep("HappyPath: block seems not confirmed")
-                    else:
-                        click.echo(f"block confirmed. working on adding detail information for launch_id: 0x{current_launcher_id}")
-                        try:
-                            height = response['coin_record']['confirmed_block_index']
-                            ts = response['coin_record']['timestamp']
-                            f.write(f"0x{current_launcher_id},0x{current_tx_id},{height},{ts}\n")
-                            click.echo(f"write into file:0x{current_launcher_id},0x{current_tx_id},{height},{ts}\n")
-                            data_fetched = True
-                            time.sleep(0.05)
-                        except Exception as er:
-                            click.echo("error trying to fetch coin after getting success result: ", err=True)
-                            click.echo(e)
+                    try:
+                        if not response['success']:
+                            print_message_and_sleep("HappyPath: block seems not confirmed")
                             print_restart_message_and_sleep()
+                        else:
+                            click.echo(f"block confirmed. working on adding detail information for launch_id: 0x{current_launcher_id}")
+                            try:
+                                height = response['coin_record']['confirmed_block_index']
+                                ts = response['coin_record']['timestamp']
+                                f.write(f"0x{current_launcher_id},0x{current_tx_id},{height},{ts}\n")
+                                click.echo(f"write into file:0x{current_launcher_id},0x{current_tx_id},{height},{ts}\n")
+                                data_fetched = True
+                                time.sleep(0.05)
+                            except Exception as er:
+                                click.echo("error trying to fetch coin after getting success result: ", err=True)
+                                click.echo(er)
+                                print_restart_message_and_sleep()
+                    except Exception as ee:
+                        click.echo("error trying to get 'success' field in result", err=True)
+                        click.echo(ee)
+                        print_restart_message_and_sleep()
                 except Exception as e:
                     click.echo("error trying to fetch coin information: ", err=True)
                     click.echo(e)
