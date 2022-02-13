@@ -1,0 +1,1 @@
+echo "1" | tee keep_minting_flag
