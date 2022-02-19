@@ -37,6 +37,7 @@ from chia.wallet.puzzles.p2_delegated_puzzle_or_hidden_puzzle import (
     calculate_synthetic_secret_key,
 )
 from clvm.casts import int_from_bytes, int_to_bytes
+import random
 
 COIN_AMOUNT = 1
 
@@ -480,9 +481,7 @@ class ReaiWallet:
         if len(all_available_coins) < k:
             return False, []
         else:
-            starting_coins = []
-            for i in range(0, k):
-                starting_coins.append(all_available_coins[i])
+            starting_coins = random.sample(all_available_coins, k)
 
             starting_puzzle: Program = p2_delegated_puzzle_or_hidden_puzzle.puzzle_for_pk(
                 self.pk
