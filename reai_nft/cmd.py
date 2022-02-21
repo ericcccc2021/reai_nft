@@ -233,9 +233,15 @@ async def mint_in_batch_no_stop(ctx, fee, batchsize, filepath):
         headers = {'Content-Type': 'application/json'}
         url = "https://localhost:8555/get_coin_record_by_name"
 
+        global retry_count
+        retry_count = 0
+
         for cur_item in ids_and_txs:
             data_fetched = False
-            while not data_fetched:
+            if retry_count >= 150:
+                break
+
+            while not data_fetched and retry_count < 150:
                 try:
                     current_launcher_id = cur_item[0]
                     current_tx_id = cur_item[1]
@@ -246,6 +252,7 @@ async def mint_in_batch_no_stop(ctx, fee, batchsize, filepath):
                         if not response['success']:
                             print_message_and_sleep("HappyPath: block seems not confirmed")
                             print_restart_message_and_sleep()
+                            retry_count = retry_count + 1
                         else:
                             click.echo(f"block confirmed. working on adding detail information for launch_id: 0x{current_launcher_id}")
                             try:
